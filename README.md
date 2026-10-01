@@ -65,6 +65,11 @@ permission**.
 | ⌘⌫         | delete the selected item from history |
 | Esc        | close (also closes if you click away) |
 
+The picker has the history list on the left and a large **preview pane** on
+the right: the full text (up to 50,000 characters, scrollable and selectable)
+or the image scaled to fit, with its size and copy time underneath. Images and
+text are both searchable (images match on their description, e.g. `Image 800×600`).
+
 The picker is a non-activating panel, so keyboard focus returns to the app you
 were in as soon as it closes. Then press ⌘V.
 

@@ -172,5 +172,29 @@ test("clipboard restoration") {
     expect(pasteboard.data(forType: .png) == png, "image data restored")
 }
 
+test("image copy and restore round trip") {
+    let pasteboard = NSPasteboard.withUniqueName()
+    defer { pasteboard.releaseGlobally() }
+    let store = try HistoryStore(path: tempDB())
+    let monitor = ClipboardMonitor(pasteboard: pasteboard, store: store)
+
+    let rep = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: 30, pixelsHigh: 20, bitsPerSample: 8,
+                               samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
+                               colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0)!
+    let png = rep.representation(using: .png, properties: [:])!
+    pasteboard.clearContents()
+    pasteboard.setData(png, forType: .png)
+    expect(monitor.poll(), "PNG on the clipboard is captured")
+    expect(store.search().first?.text == "Image 30×20", "image description has dimensions")
+
+    copy("text in between", to: pasteboard)
+    monitor.poll()
+
+    let item = store.search("Image")[0]
+    store.content(id: item.id)?.write(to: pasteboard)
+    expect(pasteboard.data(forType: .png) == png, "PNG restored byte for byte")
+    expect(NSImage(pasteboard: pasteboard) != nil, "restored data is a valid image for pasting")
+}
+
 print(failures == 0 ? "\nAll tests passed (\(checks) checks)." : "\n\(failures) of \(checks) checks failed.")
 exit(failures == 0 ? 0 : 1)
